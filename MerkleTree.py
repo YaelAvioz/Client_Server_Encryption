@@ -1,3 +1,5 @@
+# Yael Avioz, 207237421, Bar Shein, 316045285
+
 from hashlib import sha256
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
@@ -65,13 +67,16 @@ class MerkleTree:
 
         self.root = nodes[0]
 
+    # input 1 - Add a leaf to the Merkle tree
     def add_leaf(self, value):
         self.leafs.append(MerkleNode(value=value))
         self._create_tree()
 
+    # input 2 - Calculates the root value
     def calc_root(self):
         return self.root.digest if self.root else None
 
+    # input 3 - Create Proof of Inclusion
     def _get_proof(self, current_node: MerkleNode) -> str:
         if current_node == self.root:
             return ''
@@ -88,6 +93,7 @@ class MerkleTree:
 
         return self.root.digest + ' ' + self._get_proof(self.leafs[index])
 
+    # input 4 - Proof of Inclusion
     def _check_proof(self, acumm, digest_list) -> str:
         if not digest_list:
             return acumm
@@ -102,6 +108,7 @@ class MerkleTree:
 
         return self._check_proof(get_hexdigest(value.encode()), digest_list) == self.root.digest
 
+    # input 5 - Creat a key (using RSA algorithm)
     @staticmethod
     def generate_keys():
         private_key = rsa.generate_private_key(
@@ -121,6 +128,7 @@ class MerkleTree:
 
         return private_pem, public_pem
 
+    # input 6 - Create Signature
     def create_signature(self, sign_key: str) -> str:
         signature = load_pem_private_key(
             sign_key.encode(),
@@ -136,6 +144,7 @@ class MerkleTree:
         )
         return (base64.b64encode(signature)).decode()
 
+    # input 7 - Verify Signature
     @staticmethod
     def verify_signature(public_key: str, signature: str, text: str) -> bool:
         public_key = load_pem_public_key(public_key.encode(), backend=default_backend())
@@ -210,4 +219,3 @@ if __name__ == '__main__':
     t.root.print()
     print(proof := t.get_proof(2))
     print(t.check_proof('2', proof))
-

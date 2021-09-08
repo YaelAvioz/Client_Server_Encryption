@@ -1,0 +1,2 @@
+# Yael Avioz, 207237421
+ROUND_TIME_IN_SEC = 60

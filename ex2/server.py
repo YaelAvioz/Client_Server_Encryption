@@ -1,4 +1,4 @@
-# Yael Avioz, 207237421
+# Yael Avioz, 207237421, Bar Shein, 316045285
 import random
 import socket
 from time import sleep

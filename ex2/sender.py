@@ -1,4 +1,4 @@
-# Yael Avioz, 207237421, Bar Shein, 316045285
+# Yael Avioz, 207237421
 import socket
 from time import sleep
 
@@ -18,20 +18,16 @@ class Message:
     """
 
     def __init__(self, message_description):
-        message, path, round, password, salt, dest_ip, dest_port = message_description.split()
+        message, path, round_number, password, salt, dest_ip, dest_port = message_description.split()
         self._message = message
         self._path = path.split(',')
-        self._round = int(round)
+        self.round_number = int(round_number)
         self._password = password
         self._salt = salt
         self._dest_ip = dest_ip
         self._dest_port = dest_port
 
-    def send(self, servers):
-        if self._round > 0:
-            self._round -= 1
-            return 0
-
+    def encode(self, servers):
         message = self._generate_message_to_send(self._dest_ip, self._dest_port, self._message, self._password)
         for server_name in self._path[:-1]:
             server = servers[server_name]
@@ -40,15 +36,7 @@ class Message:
         dest_server = servers[self._path[-1]]
         encrypted_message = self._encrypt(message, dest_server.public_key)
 
-        self._send(dest_server, message)
-
-        return len(encrypted_message)
-
-    @staticmethod
-    def _send(dest_server, message):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((dest_server.ip, dest_server.port))
-            s.sendall(message)
+        return encrypted_message
 
     def _generate_message_to_send(self, ip, port, data, key):
         return ip + port + self._encrypt(data, key)
@@ -69,11 +57,20 @@ class Sender:
 
         while messages:
             for i, message in enumerate(messages):
-                sent = message.send(servers)
-                if sent:
-                    messages.pop(i)
+                if message.round_number > 0:
+                    message.round_number -= 1
+                else:
+                    self._send(servers, messages.pop(i))
 
             sleep(ROUND_TIME_IN_SEC)
+
+    @staticmethod
+    def _send(servers, encoded_message):
+        encoded_message = encoded_message.encode(servers)
+        dest_server = servers[-1]
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((dest_server.ip, dest_server.port))
+            s.sendall(encoded_message)
 
     @staticmethod
     def _get_messages(x):
@@ -88,5 +85,6 @@ class Sender:
 
 if __name__ == '__main__':
     sender = Sender()
+    # TODO: find how to get the input
     x = input()
     sender.run(x)

@@ -1,2 +1,2 @@
-# Yael Avioz, 207237421
+# Yael Avioz, 207237421, Bar Shein, 316045285
 ROUND_TIME_IN_SEC = 60

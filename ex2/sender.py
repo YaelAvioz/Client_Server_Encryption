@@ -1,4 +1,3 @@
-# Yael Avioz, 207237421, Bar Shein, 316045285
 import base64
 import socket
 from time import sleep
